@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "github.com/cxpgo/ginf/docs"
 	"github.com/cxpgo/ginf/global"
+	"github.com/cxpgo/ginf/router"
 	"github.com/cxpgo/golib/lib"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -16,7 +17,7 @@ type server interface {
 
 func RunWindowsServer() {
 
-	Router := Routers()
+	Router := router.Routers()
 	//Router.Static("/form-generator", "./resource/page")
 
 	address := fmt.Sprintf(":%d", global.Config.System.Post)
