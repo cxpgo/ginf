@@ -4,10 +4,10 @@ import (
 	"errors"
 	"github.com/cxpgo/ginf/model"
 	"github.com/cxpgo/ginf/model/request"
-	uuid "github.com/satori/go.uuid"
-	"gorm.io/gorm"
 	"github.com/cxpgo/ginf/utils"
 	"github.com/cxpgo/golib/lib"
+	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 func Register(u model.SysUser) (err error, userInter model.SysUser) {

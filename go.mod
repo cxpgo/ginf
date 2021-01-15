@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/casbin/casbin v1.9.1
 	github.com/casbin/casbin/v2 v2.20.0
-	github.com/casbin/gorm-adapter/v3 v3.0.4
+	github.com/casbin/gorm-adapter/v3 v3.0.2
 	github.com/cxpgo/golib v0.0.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3

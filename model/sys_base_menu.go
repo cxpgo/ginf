@@ -1,11 +1,9 @@
 package model
 
-import (
-	"github.com/cxpgo/ginf/global"
-)
+import "github.com/cxpgo/golib/model"
 
 type SysBaseMenu struct {
-	global.GormModel
+	model.GormModel
 	MenuLevel     uint   `json:"-"`
 	ParentId      string `json:"parentId" gorm:"comment:父菜单ID"`
 	Path          string `json:"path" gorm:"comment:路由path"`
@@ -27,7 +25,7 @@ type Meta struct {
 }
 
 type SysBaseMenuParameter struct {
-	global.GormModel
+	model.GormModel
 	SysBaseMenuID uint
 	Type          string `json:"type" gorm:"comment:地址栏携带参数为params还是query"`
 	Key           string `json:"key" gorm:"comment:地址栏携带参数的key"`

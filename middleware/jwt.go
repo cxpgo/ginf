@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"github.com/cxpgo/ginf/global"
 	"github.com/cxpgo/ginf/model"
 	"github.com/cxpgo/ginf/model/request"
@@ -11,22 +12,23 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"log"
 	"strconv"
 	"time"
 )
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 我们这里jwt鉴权取头部信息 x-token 登录时回返回token信息 这里前端需要把token存储到cookie或者本地localStorage中 不过需要跟后端协商过期时间 可以约定刷新令牌或者重新登录
-		log.Println("Register===1")
+		// 我们这里jwt鉴权取头部信息 x-token 登录时回返回token信息 这里前端需要把token存储到cookie或者本地localStorage中
+		// 不过需要跟后端协商过期时间 可以约定刷新令牌或者重新登录
 		token := c.Request.Header.Get("x-token")
 		if token == "" {
+			fmt.Println("未登录或非法访问")
 			response.FailWithDetailed(gin.H{"reload": true}, "未登录或非法访问", c)
 			c.Abort()
 			return
 		}
 		if service.IsBlacklist(token) {
+			fmt.Println("您的帐户异地登陆或令牌失效")
 			response.FailWithDetailed(gin.H{"reload": true}, "您的帐户异地登陆或令牌失效", c)
 			c.Abort()
 			return
@@ -34,9 +36,9 @@ func JWTAuth() gin.HandlerFunc {
 		j := NewJWT()
 		// parseToken 解析token包含的信息
 		claims, err := j.ParseToken(token)
-		log.Println("Register===2")
 		if err != nil {
 			if err == TokenExpired {
+				fmt.Println("授权已过期")
 				response.FailWithDetailed(gin.H{"reload": true}, "授权已过期", c)
 				c.Abort()
 				return
@@ -49,9 +51,10 @@ func JWTAuth() gin.HandlerFunc {
 			_ = service.JsonInBlacklist(model.JwtBlacklist{Jwt: token})
 			response.FailWithDetailed(gin.H{"reload": true}, err.Error(), c)
 			c.Abort()
+			fmt.Println("查无此人")
 		}
 		if claims.ExpiresAt-time.Now().Unix() < claims.BufferTime {
-			claims.ExpiresAt = time.Now().Unix() + 60*60*24*7
+			claims.ExpiresAt = time.Now().Unix() + global.Config.JWT.ExpiresTime
 			newToken, _ := j.CreateToken(*claims)
 			newClaims, _ := j.ParseToken(newToken)
 			c.Header("new-token", newToken)
@@ -60,6 +63,7 @@ func JWTAuth() gin.HandlerFunc {
 				err, RedisJwtToken := service.GetRedisJWT(newClaims.Username)
 				if err != nil {
 					lib.Log.Error("get redis jwt failed", zap.Any("err", err))
+					fmt.Println("get redis jwt failed")
 				} else { // 当之前的取成功时才进行拉黑操作
 					_ = service.JsonInBlacklist(model.JwtBlacklist{Jwt: RedisJwtToken})
 				}
@@ -68,7 +72,6 @@ func JWTAuth() gin.HandlerFunc {
 			}
 		}
 		c.Set("claims", claims)
-		log.Println("Register===3")
 		c.Next()
 	}
 }

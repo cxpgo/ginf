@@ -1,12 +1,12 @@
 package model
 
 import (
-	"github.com/cxpgo/ginf/global"
+	"github.com/cxpgo/golib/model"
 	"github.com/satori/go.uuid"
 )
 
 type SysUser struct {
-	global.GormModel
+	model.GormModel
 	UUID        uuid.UUID    `json:"uuid" gorm:"comment:用户UUID"`
 	Username    string       `json:"userName" gorm:"comment:用户登录名"`
 	Password    string       `json:"-"  gorm:"comment:用户登录密码"`

@@ -1,10 +1,8 @@
 package model
 
-import (
-	"github.com/cxpgo/ginf/global"
-)
+import "github.com/cxpgo/golib/model"
 
 type JwtBlacklist struct {
-	global.GormModel
+	model.GormModel
 	Jwt string `gorm:"type:text;comment:jwt"`
 }

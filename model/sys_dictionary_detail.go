@@ -1,13 +1,11 @@
 // 自动生成模板SysDictionaryDetail
 package model
 
-import (
-	"github.com/cxpgo/ginf/global"
-)
+import "github.com/cxpgo/golib/model"
 
 // 如果含有time.Time 请自行import time包
 type SysDictionaryDetail struct {
-	global.GormModel
+	model.GormModel
 	Label           string `json:"label" form:"label" gorm:"column:label;comment:展示值"`
 	Value           int    `json:"value" form:"value" gorm:"column:value;comment:字典值"`
 	Status          *bool  `json:"status" form:"status" gorm:"column:status;comment:启用状态"`

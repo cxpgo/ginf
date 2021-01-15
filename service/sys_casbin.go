@@ -2,12 +2,13 @@ package service
 
 import (
 	"errors"
-	"github.com/cxpgo/ginf/global"
-	"github.com/cxpgo/ginf/model"
-	"github.com/cxpgo/ginf/model/request"
+	"fmt"
 	"github.com/casbin/casbin/util"
 	"github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
+	"github.com/cxpgo/ginf/global"
+	"github.com/cxpgo/ginf/model"
+	"github.com/cxpgo/ginf/model/request"
 	"github.com/cxpgo/golib/lib"
 	_ "github.com/go-sql-driver/mysql"
 	"strings"
@@ -91,7 +92,17 @@ func ClearCasbin(v int, p ...string) bool {
 //@return: *casbin.Enforcer
 
 func Casbin() *casbin.Enforcer {
-	a, _ := gormadapter.NewAdapter(lib.GConfig.MySqlConfList["default"].DbType, lib.GetDataSourcePathByConfig(nil), true)
+	//root:Cxp!@#123@(47.100.244.199:3306)/football
+	fmt.Printf("mysql=%s\n",lib.GetDataSourcePathByConfig(nil))
+	fmt.Printf("dbtype=%s\n",lib.GConfig.MySqlConfList["default"].DbType)
+
+	//a, err := gormadapter.NewAdapter(lib.GConfig.MySqlConfList["default"].DbType, lib.GetDataSourcePathByConfig(nil), true)
+	a, err := gormadapter.NewAdapterByDB(lib.GGorm)
+	if err!=nil{
+		fmt.Printf("gormadapter_err=%+v\n",err)
+		return nil
+	}
+	fmt.Printf("ModelPath=%s\n",global.Config.Casbin.ModelPath)
 	e, _ := casbin.NewEnforcer(global.Config.Casbin.ModelPath, a)
 	e.AddFunction("ParamsMatch", ParamsMatchFunc)
 	_ = e.LoadPolicy()

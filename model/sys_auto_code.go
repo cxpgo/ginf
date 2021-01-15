@@ -27,4 +27,4 @@ type Field struct {
 	DictType        string `json:"dictType"`
 }
 
-var AutoMoveErr error = errors.New("创建代码成功并移动文件成功")
+var AutoMoveErr = errors.New("创建代码成功并移动文件成功")

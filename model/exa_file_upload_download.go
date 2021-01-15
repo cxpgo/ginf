@@ -1,11 +1,9 @@
 package model
 
-import (
-	"github.com/cxpgo/ginf/global"
-)
+import "github.com/cxpgo/golib/model"
 
 type ExaFileUploadAndDownload struct {
-	global.GormModel
+	model.GormModel
 	Name string `json:"name" gorm:"comment:文件名"`
 	Url  string `json:"url" gorm:"comment:文件地址"`
 	Tag  string `json:"tag" gorm:"comment:文件标签"`

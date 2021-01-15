@@ -1,11 +1,9 @@
 package model
 
-import (
-	"github.com/cxpgo/ginf/global"
-)
+import "github.com/cxpgo/golib/model"
 
 type SysApi struct {
-	global.GormModel
+	model.GormModel
 	Path        string `json:"path" gorm:"comment:api路径"`
 	Description string `json:"description" gorm:"comment:api中文描述"`
 	ApiGroup    string `json:"apiGroup" gorm:"comment:api组"`

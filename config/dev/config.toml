@@ -2,19 +2,22 @@
     env="dev"       # pro dev oa local
     post=8888
     oss-type="local"
-    use-multipoint=false   #多点登录
+    use-multipoint=true   #多平台登录（token 缓存在redis 其它平台可以共享用户token）
+    use-multidevice=false  #多设备登录（一个帐号可以同时在不同设备登录例如（ web,mobile）
 
 [jwt]
   signing-key='ginf'
+  expires_time = 604800 # 7 day token 过期时间
+  buffer_time = 86400   # 1 day token 缓存时间
 # captcha configuration
 [captcha]
-    key-long= 6
+    key-long= 1
     img-width=240
     img-height= 80
 
 # casbin configuration
 [casbin]
-  model-path='./resource/rbac_model.conf'
+  model-path='./global/rbac_model.conf'
 # email configuration
 [email]
   to= 'xxx@qq.com'

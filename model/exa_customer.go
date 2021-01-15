@@ -1,11 +1,9 @@
 package model
 
-import (
-	"github.com/cxpgo/ginf/global"
-)
+import "github.com/cxpgo/golib/model"
 
 type ExaCustomer struct {
-	global.GormModel
+	model.GormModel
 	CustomerName       string  `json:"customerName" form:"customerName" gorm:"comment:客户名"`
 	CustomerPhoneData  string  `json:"customerPhoneData" form:"customerPhoneData" gorm:"comment:客户手机号"`
 	SysUserID          uint    `json:"sysUserId" form:"sysUserId" gorm:"comment:管理ID"`

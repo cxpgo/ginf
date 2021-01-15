@@ -2,11 +2,10 @@ package service
 
 import (
 	"errors"
+	"github.com/cxpgo/ginf/global"
 	"github.com/cxpgo/ginf/model"
-	"github.com/cxpgo/golib/gf/util/gconv"
 	"github.com/cxpgo/golib/lib"
 	"gorm.io/gorm"
-	"time"
 )
 
 //@author: [piexlmax](https://github.com/piexlmax)
@@ -39,9 +38,15 @@ func IsBlacklist(jwt string) bool {
 
 func GetRedisJWT(userName string) (error, string) {
 	//redisJWT, err = global.GVA_REDIS.Get(userName).Result()
-	redisJWT, err := lib.GRedis.Do("get",userName)
-	gconv.String(redisJWT)
-	return err, redisJWT.(string)
+	//fmt.Printf("GetRedisJWT=%s\n",userName)
+	redisJWT, err := lib.GRedis.DoString("get",userName)
+	if err != nil{
+		//fmt.Printf("GetRedisJWT err1=%+v\n",err)
+		return err, ""
+	}else{
+		//fmt.Printf("GetRedisJWT redisJWT=%v, err2=%v\n",redisJWT,err)
+		return err, redisJWT
+	}
 }
 
 //@author: [piexlmax](https://github.com/piexlmax)
@@ -52,9 +57,14 @@ func GetRedisJWT(userName string) (error, string) {
 
 func SetRedisJWT(jwt string, userName string) (err error) {
 	// 此处过期时间等于jwt过期时间
-	timer := 60 * 60 * 24 * 7 * time.Second
-	lib.GRedis.Do("set",userName,)
-	_,err = lib.GRedis.DoWithTimeout(timer,"set",userName,jwt)
+	//timer := 60 * 60 * 24 * 7 * time.Second
+	//timer := 60 * 60 * 24 * 7
+	//lib.GRedis.Do("set",userName,jwt)
+	//fmt.Printf("%s,timer=%v\n",userName,timer)
+	_,err = lib.GRedis.Do("setex",userName,global.Config.JWT.ExpiresTime,jwt)
+	if err!=nil{
+		lib.Log.Errorf("SetRedisJWT is err : %v",err)
+	}
 	//err = global.GVA_REDIS.Set(userName, jwt, timer).Err()
 	return err
 }

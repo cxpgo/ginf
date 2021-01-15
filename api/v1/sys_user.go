@@ -2,13 +2,13 @@ package v1
 
 import (
 	"fmt"
+	"github.com/cxpgo/ginf/global"
 	"github.com/cxpgo/ginf/middleware"
 	"github.com/cxpgo/ginf/model"
 	"github.com/cxpgo/ginf/model/request"
 	"github.com/cxpgo/ginf/model/response"
 	"github.com/cxpgo/ginf/service"
 	"github.com/cxpgo/ginf/utils"
-	"github.com/cxpgo/ginf/global"
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/cxpgo/golib/lib"
@@ -32,10 +32,11 @@ func Login(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+
 	if store.Verify(L.CaptchaId, L.Captcha, true) {
 		U := &model.SysUser{Username: L.Username, Password: L.Password}
 		if err, user := service.Login(U); err != nil {
-			lib.Log.Error("登陆失败! 用户名不存在或者密码错误", zap.Any("err", err))
+			lib.Log.Errorf("登陆失败! 用户名不存在或者密码错误 : %v", err)
 			response.FailWithMessage("用户名不存在或者密码错误", c)
 		} else {
 			tokenNext(c, *user)
@@ -46,8 +47,10 @@ func Login(c *gin.Context) {
 	}
 
 }
+
 // 登录以后签发jwt
 func tokenNext(c *gin.Context, user model.SysUser) {
+
 	j := &middleware.JWT{SigningKey: []byte(global.Config.JWT.SigningKey)} // 唯一签名
 	claims := request.CustomClaims{
 		UUID:        user.UUID,
@@ -55,11 +58,11 @@ func tokenNext(c *gin.Context, user model.SysUser) {
 		NickName:    user.NickName,
 		Username:    user.Username,
 		AuthorityId: user.AuthorityId,
-		BufferTime:  60 * 60 * 24, // 缓冲时间1天 缓冲时间内会获得新的token刷新令牌 此时一个用户会存在两个有效令牌 但是前端只留一个 另一个会丢失
+		BufferTime:  global.Config.JWT.BufferTime, // 缓冲时间1天 缓冲时间内会获得新的token刷新令牌 此时一个用户会存在两个有效令牌 但是前端只留一个 另一个会丢失
 		StandardClaims: jwt.StandardClaims{
-			NotBefore: time.Now().Unix() - 1000,       // 签名生效时间
-			ExpiresAt: time.Now().Unix() + 60*60*24*7, // 过期时间 7天
-			Issuer:    "qmPlus",                       // 签名的发行者
+			NotBefore: time.Now().Unix() - 1000,                          // 签名生效时间
+			ExpiresAt: time.Now().Unix() + global.Config.JWT.ExpiresTime, // 过期时间 7天
+			Issuer:    "qmPlus",                                          // 签名的发行者
 		},
 	}
 	token, err := j.CreateToken(claims)
@@ -73,41 +76,45 @@ func tokenNext(c *gin.Context, user model.SysUser) {
 			User:      user,
 			Token:     token,
 			ExpiresAt: claims.StandardClaims.ExpiresAt * 1000,
-		}, "登录成功", c)
+		}, "登录成功1", c)
 		return
 	}
 	if err, jwtStr := service.GetRedisJWT(user.Username); err == redis.ErrNil {
 		if err := service.SetRedisJWT(token, user.Username); err != nil {
-			lib.Log.Error("设置登录状态失败", zap.Any("err", err))
-			response.FailWithMessage("设置登录状态失败", c)
+			lib.Log.Error("设置登录状态失败 %v", err)
+			response.FailWithMessage("设置登录状态失败1", c)
 			return
 		}
 		response.OkWithDetailed(response.LoginResponse{
 			User:      user,
 			Token:     token,
 			ExpiresAt: claims.StandardClaims.ExpiresAt * 1000,
-		}, "登录成功", c)
+		}, "登录成功2", c)
 	} else if err != nil {
-		lib.Log.Error("设置登录状态失败", zap.Any("err", err))
-		response.FailWithMessage("设置登录状态失败", c)
+		lib.Log.Errorf("设置登录状态失败 %v", err)
+		response.FailWithMessage("设置登录状态失败2", c)
 	} else {
-		var blackJWT model.JwtBlacklist
-		blackJWT.Jwt = jwtStr
-		if err := service.JsonInBlacklist(blackJWT); err != nil {
-			response.FailWithMessage("jwt作废失败", c)
-			return
+		if !global.Config.System.UseMultidevice {
+			var blackJWT model.JwtBlacklist
+			blackJWT.Jwt = jwtStr
+			if err := service.JsonInBlacklist(blackJWT); err != nil {
+				response.FailWithMessage("jwt作废失败", c)
+				return
+			}
 		}
+
 		if err := service.SetRedisJWT(token, user.Username); err != nil {
-			response.FailWithMessage("设置登录状态失败", c)
+			response.FailWithMessage("设置登录状态失败3", c)
 			return
 		}
 		response.OkWithDetailed(response.LoginResponse{
 			User:      user,
 			Token:     token,
 			ExpiresAt: claims.StandardClaims.ExpiresAt * 1000,
-		}, "登录成功", c)
+		}, "登录成功3", c)
 	}
 }
+
 // @Tags SysUser
 // @Summary 用户注册账号
 // @Produce  application/json

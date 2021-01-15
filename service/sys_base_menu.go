@@ -64,7 +64,7 @@ func UpdateBaseMenu(menu model.SysBaseMenu) (err error) {
 			return txErr
 		}
 		if len(menu.Parameters) > 0 {
-			for k, _ := range menu.Parameters {
+			for k := range menu.Parameters {
 				menu.Parameters[k].SysBaseMenuID = menu.ID
 			}
 			txErr = tx.Create(&menu.Parameters).Error
